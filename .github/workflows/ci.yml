@@ -2,53 +2,50 @@ name: Android CI
 
 on:
   push:
-    branches:
-      - master  # Đảm bảo chạy CI trên nhánh 'master', bạn có thể thay đổi nhánh theo nhu cầu.
+    branches: [  master ]
   pull_request:
-    branches:
-      - master  # CI sẽ chạy khi có pull request vào nhánh 'master'
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    # Bước 1: Checkout mã nguồn từ repo
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Bước 2: Cài đặt JDK 16 (nếu bạn muốn sử dụng JDK 16)
-    - name: Set up JDK 16
+    - name: Set up JDK
       uses: actions/setup-java@v3
       with:
-        distribution: temurin
-        java-version: '16'
+        java-version: '17'
+        distribution: 'temurin'
 
-    # Bước 3: Cài đặt Android SDK thủ công
-    - name: Install Android SDK
-      run: |
-        sudo apt update
-        sudo apt install -y wget unzip
-        wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip
-        unzip commandlinetools-linux-8092744_latest.zip
-        sudo mv cmdline-tools /usr/local/android-sdk
-        echo "export ANDROID_HOME=/usr/local/android-sdk" >> $GITHUB_ENV
-        echo "export PATH=\$PATH:\$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_ENV
-        sdkmanager --licenses
-        sdkmanager "platform-tools" "build-tools;30.0.3" "android-30"
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
 
-    # Bước 4: Build và chạy Unit Test (chạy các unit tests cho dự án)
-    - name: Build & Unit Tests
-      run: ./gradlew testDebugUnitTest --no-daemon
+    - name: Build and Run Unit Tests
+      run: ./gradlew build test
 
-    # Bước 5: Set up Android Emulator và chạy Instrumented UI Tests
-    - name: Set up Android Emulator and run Instrumented Tests
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Create AVD and run UI Tests
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 31  # Phiên bản API của Android Emulator (tùy chọn, có thể thay đổi theo dự án)
-        arch: x86_64  # Kiến trúc của Emulator (x86_64 cho CPU Intel/AMD)
-        force-avd-creation: true  # Tạo mới AVD nếu không có sẵn
+        api-level: 30
+        target: google_apis
+        arch: x86_64
+        profile: pixel
+        script: ./gradlew connectedAndroidTest
 
-    # Bước 6: Chạy các Instrumented UI Tests
-    - name: Run Instrumented Tests
-      run: ./gradlew connectedDebugAndroidTest --no-daemon
+    - name: Upload Unit Test Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: unit-test-report
+        path: app/build/reports/tests/testDebugUnitTest/
+
+    - name: Upload UI Test Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: ui-test-report
+        path: app/build/reports/androidTests/connected/
