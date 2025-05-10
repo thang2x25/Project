@@ -3,10 +3,10 @@ name: Android CI
 on:
   push:
     branches:
-      - main  # Đảm bảo chạy CI trên nhánh 'main', bạn có thể thay đổi nhánh theo nhu cầu.
+      - master  # Đảm bảo chạy CI trên nhánh 'main', bạn có thể thay đổi nhánh theo nhu cầu.
   pull_request:
     branches:
-      - main  # CI sẽ chạy khi có pull request vào nhánh 'main'
+      - master  # CI sẽ chạy khi có pull request vào nhánh 'main'
 
 jobs:
   build:
