@@ -1,0 +1,48 @@
+name: Android CI
+
+on:
+  push:
+    branches:
+      - main  # Đảm bảo chạy CI trên nhánh 'main', bạn có thể thay đổi nhánh theo nhu cầu.
+  pull_request:
+    branches:
+      - main  # CI sẽ chạy khi có pull request vào nhánh 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Bước 1: Checkout mã nguồn từ repo
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Bước 2: Cài đặt JDK 11 (chúng ta dùng temurin để cài JDK từ Adoptium)
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        distribution: temurin
+        java-version: '11'
+
+    # Bước 3: Cài đặt Android SDK và dependencies
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v2
+      with:
+        sdk-version: '30.0.3'  # Phiên bản SDK Android bạn muốn sử dụng
+        ndk-version: '21.3.6528147'  # Nếu có sử dụng NDK thì thêm vào
+
+    # Bước 4: Build và chạy Unit Test (chạy các unit tests cho dự án)
+    - name: Build & Unit Tests
+      run: ./gradlew testDebugUnitTest --no-daemon
+
+    # Bước 5: Set up Android Emulator và chạy Instrumented UI Tests
+    - name: Set up Android Emulator and run Instrumented Tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 31  # Phiên bản API của Android Emulator (tùy chọn, có thể thay đổi theo dự án)
+        arch: x86_64  # Kiến trúc của Emulator (x86_64 cho CPU Intel/AMD)
+        force-avd-creation: true  # Tạo mới AVD nếu không có sẵn
+
+    # Bước 6: Chạy các Instrumented UI Tests
+    - name: Run Instrumented Tests
+      run: ./gradlew connectedDebugAndroidTest --no-daemon
