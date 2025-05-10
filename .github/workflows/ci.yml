@@ -24,12 +24,18 @@ jobs:
         distribution: temurin
         java-version: '16'
 
-    # Bước 3: Cài đặt Android SDK và dependencies
-    - name: Set up Android SDK
-      uses: android-actions/setup-android@v2
-      with:
-        sdk-version: '30.0.3'  # Phiên bản SDK Android bạn muốn sử dụng
-        ndk-version: '21.3.6528147'  # Nếu có sử dụng NDK thì thêm vào
+    # Bước 3: Cài đặt Android SDK thủ công
+    - name: Install Android SDK
+      run: |
+        sudo apt update
+        sudo apt install -y wget unzip
+        wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip
+        unzip commandlinetools-linux-8092744_latest.zip
+        sudo mv cmdline-tools /usr/local/android-sdk
+        echo "export ANDROID_HOME=/usr/local/android-sdk" >> $GITHUB_ENV
+        echo "export PATH=\$PATH:\$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_ENV
+        sdkmanager --licenses
+        sdkmanager "platform-tools" "build-tools;30.0.3" "android-30"
 
     # Bước 4: Build và chạy Unit Test (chạy các unit tests cho dự án)
     - name: Build & Unit Tests
