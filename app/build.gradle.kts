@@ -18,10 +18,10 @@ android {
     // ➔ Thêm phần signingConfigs vào đây
     signingConfigs {
         create("release") {
-            storeFile = file("C:/Users//DELL/AndroidStudioProjects/ThucHanh/21029381_NguyenMaiDucThang/mykeystore.jks")
-            storePassword = "322025"
-            keyAlias = "myappkey"
-            keyPassword = "123456"
+//            storeFile = file("C:/Users//DELL/AndroidStudioProjects/ThucHanh/21029381_NguyenMaiDucThang/mykeystore.jks")
+//            storePassword = "322025"
+//            keyAlias = "myappkey"
+//            keyPassword = "123456"
         }
     }
 
